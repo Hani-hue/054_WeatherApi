@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation</title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <label for="inputKota">Cari Lokasi:</label>
+    <input type="text" id="inputKota" placeholder="Masukkan nama kota...">
+    <button id="btnCari">Cari</button>
+    <hr>
+    
+    hasil : <p id="hasil"></p>
+    <hr>
+    kota : <p id="kota"></p>
+    <hr>
+    tipe : <p id="tipe"></p>
+    <hr>
+    koordinat : <p id="koordinat"></p>
+
+
+    <script>
+        // Menjalankan fungsi ketika tombol 'Cari' diklik
+        $('#btnCari').click(function() {
+            // Mengambil nilai dari textbox
+            const kota = $('#inputKota').val(); 
+
+            // Mengecek apakah textbox kosong
+            if (kota === "") {
+                alert("Tolong masukkan nama kota terlebih dahulu!");
+                return; // Menghentikan proses jika kosong
+            }
+
+            // PERHATIAN: Jangan lupa ganti 'KODE_API_KEY_KAMU' dengan API key-mu yang baru dan valid
+            const urlapi = "https://api.maptiler.com/geocoding/" + kota + ".json?key=KODE_API_KEY_KAMU";
+
+            $.ajax({
+                url : urlapi,
+                method : "GET",
+                success : function(data){
+                    console.log(data);
+                    
+                    // Mengecek apakah API berhasil menemukan lokasi
+                    if (data.features && data.features.length > 0) {
+                        const h = document.getElementById("hasil");
+                        const k = document.getElementById("kota");
+                        const t = document.getElementById("tipe");
+                        const ko = document.getElementById("koordinat");
+
+                        // Menambahkan sedikit fallback (||) jaga-jaga kalau data spesifik tidak ada
+                        let lokasi = data.features[0].matching_text || data.features[0].text;
+                        
+                        // Menghindari error jika array place_type_name kosong/tidak ada
+                        let negara = "-";
+                        let tipe = "-";
+                        if (data.features[0].place_type_name) {
+                            negara = data.features[0].place_type_name[0] || "-";
+                            tipe = data.features[0].place_type_name[1] || "-";
+                        }
+                        
+                        let koordinat = data.features[0].geometry.coordinates;
+
+                        h.innerHTML = lokasi;
+                        k.innerHTML = negara;
+                        t.innerHTML = tipe;
+                        ko.innerHTML = koordinat;
+                    } else {
+                        alert("Lokasi tidak ditemukan! Coba kata kunci lain.");
+                    }
+                },
+                error : function(error){
+                    console.log(error);
+                    alert("Terjadi kesalahan! Cek kembali koneksi atau API Key kamu.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
